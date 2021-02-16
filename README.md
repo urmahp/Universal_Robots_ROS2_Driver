@@ -2,6 +2,8 @@
 
 Alpha version of the ROS2 Universal Robots driver. Should be transferred to the Universal Robots org when ready.
 
+This branch is prepared for use with [Moveit!](https://moveit.ros.org/)
+
 ## General driver information
 Driver currently only supports position joint interface which means only position-based controllers can be used with 
 the ROS2 driver. [Universal Robots Client Library](https://github.com/UniversalRobots/Universal_Robots_Client_Library) includes also
@@ -47,10 +49,10 @@ cd ~/ws_driver
 source install/setup.bash
 ```
 
-Start the driver:
+Start the driver with Moveit!:
 
 ```
-ros2 launch ur_ros2_control_demos ur5_e_system_position_only.launch.py
+ros2 launch ur_ros2_control_demos ur5_e_run_move_group.launch.py
 ```
 
 Start the `joint_state_controller`:
@@ -59,17 +61,14 @@ Start the `joint_state_controller`:
 ros2 control load_start_controller joint_state_controller
 ```
 
-Start the `forward_command_controller`:
+Start the `ur_joint_trajectory_controller`:
 
 ```
-ros2 control load_start_controller forward_command_controller_position
+ros2 control load_start_controller ur_joint_trajectory_controller
 ```
 
-## Run a test node
-Run a test node which will publish joint commands on /forward_command_controller_position/commands (std_msgs::msg::Float64MultiArray)
-after checking the current joint states (to create minimal increment for safety). The node commands increment of 0.1 radians for each
-joint. The commands are incremented in regards to /joint_states found when the node is run.
+## Testing
+Use the Moveit rviz plugin to plan and execute the trajectory. Execute trajectories with
+lower values of speed scaling factor set on teach pedant (e.g. 0.5).
+Trajectory execution will be improved once `ScalingTrajectoryControllers` are implemented.
 
-```
-ros2 run ur_ros2_control_demos test_driver 
-```
