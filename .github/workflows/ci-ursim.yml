@@ -1,10 +1,5 @@
 name: UR Sim
-on:
-  pull_request:
-  push:
-    branches:
-      - master
-      - develop
+on: [push, pull_request]
 
 jobs:
   ci_binary:
