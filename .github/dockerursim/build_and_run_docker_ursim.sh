@@ -10,9 +10,6 @@ docker run --name="mydockerursim" -d \
   -e ROBOT_MODEL=UR5 \
   --net static_test_net \
   --ip 192.168.56.101 \
-  -p 8080:8080 \
-  -p 29999:29999 \
-  -p 30001-30004:30001-30004 \
   -v "${DIR}/.vol":/ursim/programs \
   -v dockursim:/ursim \
   --privileged \
