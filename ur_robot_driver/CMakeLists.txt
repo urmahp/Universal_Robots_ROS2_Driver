@@ -18,7 +18,6 @@ find_package(rclcpp REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(ur_client_library REQUIRED)
 find_package(ur_dashboard_msgs REQUIRED)
-find_package(ur_description REQUIRED)
 
 include_directories(
   include
