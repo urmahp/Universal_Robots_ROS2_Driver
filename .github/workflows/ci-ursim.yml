@@ -2,15 +2,14 @@ name: UR Sim
 on: [push, pull_request]
 
 jobs:
-  ci_binary:
-    name: foxy UR Sim
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - {ROS_DISTRO: foxy, ROS_REPO: main}
-          - {ROS_DISTRO: foxy, ROS_REPO: testing}
+  name: foxy UR Sim
+  runs-on: ubuntu-latest
+  strategy:
+    fail-fast: false
+    matrix:
+      env:
+        - {ROS_DISTRO: foxy, ROS_REPO: main}
+        - {ROS_DISTRO: foxy, ROS_REPO: testing}
     env:
       UPSTREAM_WORKSPACE: Universal_Robots_ROS2_Driver.repos
       DOCKER_RUN_OPTS: --network static_test_net
