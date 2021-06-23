@@ -108,5 +108,7 @@ ament_package()
 
 if(BUILD_TESTING)
   find_package(launch_testing_ament_cmake)
+  find_package(ur_bringup)
+  find_package(ur_description)
   add_launch_test(test/integration_test.py)
 endif()
