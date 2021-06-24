@@ -32,6 +32,7 @@
   <depend>ur_dashboard_msgs</depend>
   <depend>launch_testing_ament_cmake</depend>
   <depend>ur_msgs</depend>
+  <depend>ur_description</depend>
 
   <exec_depend>controller_manager</exec_depend>
 
