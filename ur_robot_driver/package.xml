@@ -33,6 +33,7 @@
   <depend>launch_testing_ament_cmake</depend>
   <depend>ur_msgs</depend>
   <depend>ur_description</depend>
+  <depend>ur_bringup</depend>
 
   <exec_depend>controller_manager</exec_depend>
 
