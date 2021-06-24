@@ -1,13 +1,5 @@
 name: Binary Build
-on:
-  pull_request:
-  push:
-    branches:
-      - master
-      - develop
-  schedule:
-    # Run every morning to detect flakiness and broken dependencies
-    - cron: '43 8 * * *'
+on: [push, pull_request]
 
 jobs:
   binary:
