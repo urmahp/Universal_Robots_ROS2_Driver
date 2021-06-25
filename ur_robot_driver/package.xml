@@ -34,6 +34,7 @@
   <depend>ur_msgs</depend>
   <depend>ur_description</depend>
   <depend>ur_bringup</depend>
+  <depend>ur_controllers</depend>
 
   <exec_depend>controller_manager</exec_depend>
 
