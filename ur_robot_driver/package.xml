@@ -31,10 +31,10 @@
   <depend>ur_client_library</depend>
   <depend>ur_dashboard_msgs</depend>
   <depend>launch_testing_ament_cmake</depend>
-  <depend>ur_msgs</depend>
-  <depend>ur_description</depend>
-  <depend>ur_bringup</depend>
-  <depend>ur_controllers</depend>
+  <exec_depend>ur_msgs</exec_depend>
+  <exec_depend>ur_description</exec_depend>
+  <exec_depend>ur_bringup</exec_depend>
+  <exec_depend>ur_controllers</exec_depend>
 
   <exec_depend>controller_manager</exec_depend>
 
