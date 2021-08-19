@@ -32,7 +32,7 @@ from ur_msgs.msg import IOStates
 from ur_dashboard_msgs.srv import GetRobotMode
 from ur_dashboard_msgs.msg import RobotMode
 from std_srvs.srv import Trigger
-
+from controller_manager_msgs.srv import ListControllers
 
 @pytest.mark.launch_test
 def generate_test_description():
@@ -109,30 +109,34 @@ class IOTest(unittest.TestCase):
             raise Exception(
                 "Could not reach get robot mode service, make sure that the driver is actually running"
             )
+        
+        self.list_controller_client = self.node.create_client(
+            ListControllers, "/controller_manager/list_controllers"
+        )
+        if self.list_controller_client.wait_for_service(10) is False:
+            raise Exception(
+                "Could not reach controller list service, make sure that the driver is actually running"
+            )            
 
     def test_switch_on(self):
         """Test power on a robot."""
         empty_req = Trigger.Request()
         get_robot_mode_req = GetRobotMode.Request()
 
-        self.power_on_client.call_async(empty_req)
+        self.call_service(self.power_on_client, empty_req)
         end_time = time.time() + 10
         mode = RobotMode.DISCONNECTED
         while mode not in (RobotMode.IDLE, RobotMode.RUNNING) and time.time() < end_time:
-            future = self.get_robot_mode_client.call_async(get_robot_mode_req)
-            while future.done() is False:
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-            mode = future.result().robot_mode.mode
+            result = self.call_service(self.get_robot_mode_client, get_robot_mode_req)
+            mode = result.robot_mode.mode
 
         self.assertIn(mode, (RobotMode.IDLE, RobotMode.RUNNING))
 
-        self.brake_release_client.call_async(empty_req)
+        self.call_service(self.brake_release_client, empty_req)
         end_time = time.time() + 10
         while mode != RobotMode.RUNNING and time.time() < end_time:
-            future = self.get_robot_mode_client.call_async(get_robot_mode_req)
-            while future.done() is False:
-                rclpy.spin_once(self.node, timeout_sec=0.1)
-            mode = future.result().robot_mode.mode
+            result = self.call_service(self.get_robot_mode_client, get_robot_mode_req)
+            mode = result.robot_mode.mode
 
         self.assertEqual(mode, RobotMode.RUNNING)
 
@@ -146,13 +150,26 @@ class IOTest(unittest.TestCase):
             rclpy.qos.qos_profile_system_default,
         )
 
+        # Wait for IO and status controller to be active
+        end_time = time.time() + 10
+        controler_state = None
+        list_controller_req = ListControllers.Request()
+        while time.time() < end_time and controler_state != "active":
+            controller_list = self.call_service(self.list_controller_client, list_controller_req)
+            for controller in controller_list.controller:
+                if controller.name == "io_and_status_controller":
+                    controler_state = controller.state
+                    break
+        
+        self.assertEqual(controler_state, "active")
+
         pin = 0
         set_io_req = SetIO.Request()
         set_io_req.fun = 1
         set_io_req.pin = pin
         set_io_req.state = 1.0
 
-        self.set_io_client.call_async(set_io_req)
+        self.call_service(self.set_io_client, set_io_req)
         pin_state = False
 
         end_time = time.time() + 5
@@ -164,7 +181,7 @@ class IOTest(unittest.TestCase):
         self.assertEqual(pin_state, 1)
 
         set_io_req.state = 0.0
-        self.set_io_client.call_async(set_io_req)
+        self.call_service(self.set_io_client, set_io_req)
 
         end_time = time.time() + 5
         while pin_state and time.time() < end_time:
@@ -173,8 +190,15 @@ class IOTest(unittest.TestCase):
                 pin_state = self.io_msg.digital_out_states[pin].state
 
         self.assertEqual(pin_state, 0)
-
         self.node.destroy_subscription(io_states_sub)
 
     def io_msg_cb(self, msg):
         self.io_msg = msg
+
+    def call_service(self, client, request):
+        future = client.call_async(request)
+        rclpy.spin_until_future_complete(self.node, future)
+        if future.result() is not None:
+            return future.result()
+        else:
+            raise Exception(f"Exception while calling service: {future.exception()}")
