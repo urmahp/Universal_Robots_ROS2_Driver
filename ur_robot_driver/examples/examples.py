@@ -46,7 +46,7 @@ class Robot():
     def __init__(self, node):
         self.node = node
         self.init_robot()
-    
+
     def init_robot(self):
         service_interfaces = {
             "/io_and_status_controller/set_io": SetIO,
