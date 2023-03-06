@@ -63,7 +63,7 @@ class Robot():
         )
 
     def set_io(self, pin, value):
-        """Test to set an IO and check whether it has been set."""
+        """Test to set an IO."""
         set_io_req = SetIO.Request()
         set_io_req.fun = 1
         set_io_req.pin = pin
@@ -72,13 +72,13 @@ class Robot():
         self.call_service("/io_and_status_controller/set_io", set_io_req)
 
 
-    def execute_trajectory(self, waypts, time_vec):
-        """Test robot movement."""
-        # Construct test trajectory
+    def send_trajectory(self, waypts, time_vec):
+        """Send robot trajectory."""
         if len(waypts) != len(time_vec):
             raise Exception(
                 "waypoints vector and time vec should be same length")
 
+        # Construct test trajectory
         joint_trajectory = JointTrajectory()
         joint_trajectory.joint_names = ROBOT_JOINTS
         for i in range(len(waypts)):
@@ -128,14 +128,14 @@ if __name__ == '__main__':
     node = Node("robot_driver_test")
     robot = Robot(node)
 
-    # Change waypoints according to your own needs
+    # The following list are arbitrary joint positions, change according to your own needs
     waypts = [[-1.6006, -1.7272, -2.2030, -0.8079, 1.5951, -0.0311],
               [-1.2, -1.4, -1.9, -1.2, 1.5951, -0.0311],
               [-1.6006, -1.7272, -2.2030, -0.8079, 1.5951, -0.0311]]
     time_vec = [Duration(sec=4, nanosec=0), Duration(sec=8, nanosec=0), Duration(sec=12, nanosec=0)]
 
     # Execute trajectory on robot, make sure that the robot is booted and the control script is running
-    robot.execute_trajectory(waypts, time_vec)
+    robot.send_trajectory(waypts, time_vec)
 
     # Set digital output 1 to true
     robot.set_io(1, 1.0)
