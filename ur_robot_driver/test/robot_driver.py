@@ -260,6 +260,7 @@ class RobotDriverTest(unittest.TestCase):
         self.call_service("/dashboard_client/stop", empty_req)
         time.sleep(1)
         self.call_service("/io_and_status_controller/resend_robot_program", empty_req)
+        time.sleep(0.5)
 
     #
     # Test functions
