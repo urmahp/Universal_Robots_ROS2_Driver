@@ -59,6 +59,7 @@ from ur_dashboard_msgs.msg import RobotMode
 from ur_dashboard_msgs.srv import GetRobotMode
 from ur_msgs.msg import IOStates
 from ur_msgs.srv import SetIO
+from controller_manager_msgs.srv import ListControllers
 
 TIMEOUT_WAIT_SERVICE = 10
 TIMEOUT_WAIT_SERVICE_INITIAL = 60
@@ -231,6 +232,7 @@ class RobotDriverTest(unittest.TestCase):
             "/dashboard_client/get_robot_mode": GetRobotMode,
             "/controller_manager/switch_controller": SwitchController,
             "/io_and_status_controller/resend_robot_program": Trigger,
+            "/controller_manager/list_controllers": ListControllers,
         }
         self.service_clients.update(
             {
@@ -260,7 +262,6 @@ class RobotDriverTest(unittest.TestCase):
         self.call_service("/dashboard_client/stop", empty_req)
         time.sleep(1)
         self.call_service("/io_and_status_controller/resend_robot_program", empty_req)
-        time.sleep(0.5)
 
     #
     # Test functions
@@ -330,6 +331,9 @@ class RobotDriverTest(unittest.TestCase):
 
     def test_trajectory(self, tf_prefix):
         """Test robot movement."""
+        # Wait for controller to be active
+        self.waitForController("scaled_joint_trajectory_controller")
+
         # Construct test trajectory
         test_trajectory = [
             (Duration(sec=6, nanosec=0), [0.0 for j in ROBOT_JOINTS]),
@@ -368,6 +372,9 @@ class RobotDriverTest(unittest.TestCase):
 
         This is more of a validation test that the testing suite does the right thing
         """
+        # Wait for controller to be active
+        self.waitForController("scaled_joint_trajectory_controller")
+
         # Construct test trajectory, the second point wrongly starts before the first
         test_trajectory = [
             (Duration(sec=6, nanosec=0), [0.0 for j in ROBOT_JOINTS]),
@@ -395,6 +402,9 @@ class RobotDriverTest(unittest.TestCase):
 
     def test_trajectory_scaled(self, tf_prefix):
         """Test robot movement."""
+        # Wait for controller to be active
+        self.waitForController("scaled_joint_trajectory_controller")
+
         # Construct test trajectory
         test_trajectory = [
             (Duration(sec=6, nanosec=0), [0.0 for j in ROBOT_JOINTS]),
@@ -555,6 +565,25 @@ class RobotDriverTest(unittest.TestCase):
             return future_res.result().result
         else:
             raise Exception(f"Exception while calling action: {future_res.exception()}")
+
+    def waitForController(self, controller_name, controller_status="active", timeout=TIMEOUT_WAIT_SERVICE):
+        controller_running = False
+        start_time = time.time()
+        while time.time() < start_time + TIMEOUT_WAIT_SERVICE:
+            if controller_running == True:
+                break
+
+            time.sleep(1)
+            response = self.call_service(
+                "/controller_manager/list_controllers", ListControllers.Request()
+            )
+            for controller in response.controller:
+                if controller.name == controller_name:
+                    controller_running = controller.state == controller_status
+
+        if controller_running == False:
+            raise Exception(
+                f"Controller {controller_name} did not reach controller state {controller_status} within timeout of {timeout}")
 
 
 def waitForService(node, srv_name, srv_type, timeout=TIMEOUT_WAIT_SERVICE):
